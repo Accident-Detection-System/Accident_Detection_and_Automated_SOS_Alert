@@ -1,1309 +1,1292 @@
-# 🚨 AccidentGuard
+# 🚨 AccidentAlert AI
 
 ## AI-Powered Accident Detection & Emergency Response Platform
 
-AccidentGuard is a full-stack accident detection and emergency response platform designed to help identify potential road accidents from video and live camera feeds and support faster emergency response.
+AccidentAlert AI is a full-stack-style accident detection and emergency
+response web application built with **Python, Flask, YOLOv8, OpenCV,
+MySQL, Flask-SocketIO, GPS/location services, severity analysis,
+hospital discovery, email notifications, SMS support, SOS alerts, and
+browser-based phone crash sensing**.
 
-The system combines **YOLOv8 computer vision, FastAPI, React.js, MySQL, WebSockets, GPS location services, severity analysis, hospital discovery, and email notifications** into a single web-based platform.
+The project is designed to identify potential road accidents from
+uploaded videos and live camera frames, generate accident evidence,
+estimate severity, identify nearby hospitals, and communicate emergency
+alerts.
 
-The project supports two types of users:
+The project supports two main user roles:
 
-- 🏥 Hospital operators
-- 👤 Citizens
+-   🏥 Hospital operators
+-   👤 Citizens / users
 
----
+------------------------------------------------------------------------
 
 # 📌 Table of Contents
 
-- [Project Overview](#-project-overview)
-- [Key Features](#-key-features)
-- [How the System Works](#-how-the-system-works)
-- [Technology Stack](#-technology-stack)
-- [Project Architecture](#-project-architecture)
-- [Project Structure](#-project-structure)
-- [Database](#-database)
-- [Prerequisites](#-prerequisites)
-- [Installation](#-installation)
-- [Backend Setup](#-backend-setup)
-- [Frontend Setup](#-frontend-setup)
-- [Running the Project](#-running-the-project)
-- [API Documentation](#-api-documentation)
-- [AI Accident Detection](#-ai-accident-detection)
-- [Severity Detection](#-severity-detection)
-- [Live Camera Detection](#-live-camera-detection)
-- [GPS and Nearby Hospitals](#-gps-and-nearby-hospitals)
-- [SOS Emergency System](#-sos-emergency-system)
-- [Email Notifications](#-email-notifications)
-- [Analytics](#-analytics)
-- [Evidence Generation](#-evidence-generation)
-- [Testing](#-testing)
-- [Temporary Deployment with ngrok](#-temporary-deployment-with-ngrok)
-- [Production Deployment](#-production-deployment)
-- [Environment Variables](#-environment-variables)
-- [Security](#-security)
-- [Limitations](#-limitations)
-- [Future Enhancements](#-future-enhancements)
-- [Troubleshooting](#-troubleshooting)
-- [Project Workflow](#-project-workflow)
-- [License](#-license)
+-   [Project Overview](#-project-overview)
+-   [Key Features](#-key-features)
+-   [How the System Works](#-how-the-system-works)
+-   [Technology Stack](#-technology-stack)
+-   [Project Architecture](#-project-architecture)
+-   [Project Structure](#-project-structure)
+-   [Database](#-database)
+-   [Prerequisites](#-prerequisites)
+-   [Installation](#-installation)
+-   [Backend Setup](#-backend-setup)
+-   [Running the Project](#-running-the-project)
+-   [API Documentation](#-api-documentation)
+-   [AI Accident Detection](#-ai-accident-detection)
+-   [Severity Detection](#-severity-detection)
+-   [Live Camera Detection](#-live-camera-detection)
+-   [GPS and Nearby Hospitals](#-gps-and-nearby-hospitals)
+-   [SOS Emergency System](#-sos-emergency-system)
+-   [Phone Crash Sensor](#-phone-crash-sensor)
+-   [Hardware Alert API](#-hardware-alert-api)
+-   [Email Notifications](#-email-notifications)
+-   [SMS Notifications](#-sms-notifications)
+-   [Analytics](#-analytics)
+-   [Evidence Generation](#-evidence-generation)
+-   [Testing](#-testing)
+-   [Temporary Deployment with ngrok](#-temporary-deployment-with-ngrok)
+-   [Production Deployment](#-production-deployment)
+-   [Environment Variables](#-environment-variables)
+-   [Security](#-security)
+-   [Limitations](#-limitations)
+-   [Future Enhancements](#-future-enhancements)
+-   [Troubleshooting](#-troubleshooting)
+-   [Project Workflow](#-project-workflow)
+-   [License](#-license)
 
----
+------------------------------------------------------------------------
 
 # 📖 Project Overview
 
 Road accidents require rapid identification and emergency response.
 
-AccidentGuard attempts to reduce the delay between accident detection and emergency notification by combining computer vision with GPS-based hospital discovery and real-time communication.
+AccidentAlert AI attempts to reduce the delay between accident detection
+and emergency notification by combining computer vision, real-time
+communication, location services, hospital discovery, and emergency
+alerting in one web application.
 
-The platform allows users to:
+The system can:
 
-1. Upload road/accident videos.
-2. Analyze video frames using YOLOv8.
-3. Detect people and vehicles.
-4. Evaluate possible person/vehicle overlap.
-5. Calculate an accident severity score.
-6. Capture accident evidence.
-7. Generate accident clips.
-8. Identify nearby hospitals.
-9. Send emergency email notifications.
-10. Monitor live camera feeds.
-11. Receive real-time detection events.
-12. Send GPS-based SOS alerts.
-13. View alerts and analytics.
+1.  Accept road/accident video input.
+2.  Process video frames using OpenCV.
+3.  Detect people and vehicles using YOLOv8.
+4.  Analyze person/vehicle bounding-box overlap.
+5.  Detect a potential accident when the configured IoU threshold is
+    exceeded.
+6.  Calculate a rule-based accident severity score.
+7.  Capture an accident screenshot.
+8.  Generate an accident video clip from buffered frames.
+9.  Obtain GPS coordinates when supplied.
+10. Fall back to approximate IP-based location when GPS is unavailable.
+11. Find the nearest registered hospitals.
+12. Estimate an approximate hospital response ETA from distance.
+13. Send email emergency notifications.
+14. Optionally send SMS notifications through SMSMobileAPI.
+15. Store accident information in MySQL.
+16. Notify connected hospital clients through Socket.IO.
+17. Support hospital alert acceptance and resolution.
+18. Support citizen SOS alerts.
+19. Support browser phone-motion crash alerts.
+20. Support an external hardware alert API.
+21. Provide hospital statistics and analytics.
 
----
+------------------------------------------------------------------------
 
 # ✨ Key Features
 
 ## 🔐 Authentication
 
-The platform provides authentication for two user types.
+The application provides separate authentication flows for hospitals and
+citizens.
 
 ### 🏥 Hospital
 
 Hospital operators can:
 
-- Register an account.
-- Log in securely.
-- Register CCTV cameras.
-- View registered cameras.
-- Monitor live camera detection.
-- Upload and analyze videos.
-- View accident alerts.
-- View accident evidence.
-- View accident severity.
-- View analytics.
-- Receive emergency email notifications.
+-   Register an account.
+-   Log in.
+-   Log out.
+-   Register/request CCTV cameras.
+-   View their cameras.
+-   Accept camera requests.
+-   Monitor live camera detection.
+-   Upload and analyze videos.
+-   View accident alerts.
+-   Accept accident alerts.
+-   Resolve accident alerts.
+-   View accident evidence.
+-   View accident severity.
+-   View statistics.
 
 ### 👤 Citizen
 
 Citizens can:
 
-- Register.
-- Log in.
-- Analyze road videos.
-- Use browser camera detection.
-- Share GPS location.
-- Send emergency SOS alerts.
-- Find nearby registered hospitals.
+-   Register.
+-   Log in.
+-   Log out.
+-   Upload/analyze videos.
+-   Send SOS alerts.
+-   Share GPS location.
+-   Use the phone crash-sensor page.
+-   Participate in live location sharing.
 
----
+------------------------------------------------------------------------
 
 # 🤖 AI Accident Detection
 
-AccidentGuard uses **Ultralytics YOLOv8** for object detection.
+AccidentAlert AI uses **Ultralytics YOLOv8** for object detection.
 
-The model currently used by the project is:
+The model included with the project is:
 
-```text
-backend/yolov8n.pt
+``` text
+yolov8n.pt
 ```
 
-The detection system identifies objects such as:
+The detector can identify objects from the YOLOv8 model's available
+classes, with the accident logic specifically considering:
 
-- Person
-- Car
-- Motorcycle
-- Truck
-- Bus
+-   Person
+-   Car
+-   Motorcycle
+-   Truck
+-   Bus
 
-The current accident detection approach evaluates the spatial relationship between detected people and vehicles.
+The current accident detection approach evaluates the spatial overlap
+between a detected person and a detected vehicle.
 
-The overall pipeline is:
+The basic pipeline is:
 
-```text
-Input Video
-     │
-     ▼
-Video Frame Extraction
-     │
-     ▼
-YOLOv8 Object Detection
-     │
-     ├── Person Detection
-     │
-     └── Vehicle Detection
-     │
-     ▼
-Bounding Box Analysis
-     │
-     ▼
-Person / Vehicle Overlap
-     │
-     ▼
-Accident Decision
-     │
-     ▼
-Severity Calculation
-     │
-     ▼
-Evidence Generation
-     │
-     ▼
-Hospital / Email Alerts
+``` text
+Input Video / Camera Frame
+          │
+          ▼
+       OpenCV
+          │
+          ▼
+       YOLOv8
+          │
+          ▼
+ Object Detection
+          │
+          ├── Person
+          │
+          └── Vehicle
+          │
+          ▼
+ Bounding Box Analysis
+          │
+          ▼
+ Shapely Polygon Intersection
+          │
+          ▼
+       IoU Score
+          │
+          ▼
+ Accident Decision
+          │
+          ▼
+ Severity + Evidence + Alerts
 ```
 
----
+------------------------------------------------------------------------
 
 # ⚠️ AI Detection Note
 
 The current implementation is a prototype accident-detection approach.
 
-The accident decision is based on object detection and person/vehicle bounding-box overlap rather than a dedicated accident-classification model.
+The accident decision is based on **YOLOv8 object detection plus
+person/vehicle bounding-box overlap** rather than a dedicated
+accident-classification model.
 
-Therefore, the system should not be considered a safety-critical production accident detection system without further validation.
+The implemented overlap threshold is:
 
-A production version should be evaluated using a large, representative accident dataset and a dedicated accident classification/tracking approach.
+``` text
+IoU > 0.37
+```
 
----
+This should not be interpreted as a validated real-world
+accident-detection accuracy or safety guarantee.
+
+A production system should be evaluated using representative labeled
+accident datasets, temporal tracking/action analysis, false-positive
+testing, and real-world validation.
+
+------------------------------------------------------------------------
 
 # 📊 Severity Detection
 
-When a potential accident is detected, the system calculates a severity score.
+After a potential accident is detected, the application calculates a
+rule-based severity score.
 
-The score can consider factors including:
+The score uses factors including:
 
-- Bounding-box overlap
-- Vehicle type
-- Number of detected objects
+-   Person/vehicle IoU
+-   Vehicle class
+-   Number of detected objects
 
-The severity levels used by the project are:
+The implementation applies additional weighting for vehicle types:
 
-| Score | Severity |
-|---:|---|
-| 0–34 | LOW |
-| 35–54 | MEDIUM |
-| 55–74 | HIGH |
-| 75–100 | CRITICAL |
+``` text
+Truck / Bus      +30
+Car              +20
+Motorcycle       +15
+```
 
-The final severity score is limited to a maximum of:
+The IoU contributes:
 
-```text
+``` text
+IoU × 40
+```
+
+The number of detected objects can contribute up to:
+
+``` text
+20 points
+```
+
+The final score is capped at:
+
+``` text
 100
 ```
 
----
+Severity levels:
+
+      Score Severity
+  --------- ----------
+      0--34 LOW
+     35--54 MEDIUM
+     55--74 HIGH
+    75--100 CRITICAL
+
+------------------------------------------------------------------------
 
 # 🛠️ Technology Stack
 
-## Frontend
+## Web Application
 
-| Technology | Purpose |
-|---|---|
-| React.js | User interface |
-| Vite | Frontend build/development tool |
-| JavaScript | Application logic |
-| Lucide React | UI icons |
-| Recharts | Analytics visualization |
-| Browser Camera API | Live camera access |
-| Geolocation API | GPS location |
+  Technology                    Purpose
+  ----------------------------- ---------------------------------
+  Python                        Main programming language
+  Flask                         Web application and REST API
+  Flask-CORS                    Cross-origin request support
+  Flask-SocketIO                Real-time communication
+  HTML/CSS/JavaScript           Frontend interface
+  Chart.js                      Dashboard charts
+  Leaflet                       Map/location visualization
+  Socket.IO JavaScript client   Real-time browser communication
 
----
-
-## Backend
-
-| Technology | Purpose |
-|---|---|
-| Python | Backend programming language |
-| FastAPI | REST API framework |
-| Uvicorn | ASGI server |
-| WebSockets | Real-time communication |
-| JWT | Authentication |
-| bcrypt | Password hashing |
-| Pydantic | Data validation |
-| python-multipart | File upload support |
-
----
+------------------------------------------------------------------------
 
 ## Artificial Intelligence / Computer Vision
 
-| Technology | Purpose |
-|---|---|
-| YOLOv8 | Object detection |
-| Ultralytics | YOLO implementation |
-| OpenCV | Video and image processing |
-| NumPy | Numerical operations |
-| Shapely | Geometric calculations |
+  Technology    Purpose
+  ------------- ---------------------------------
+  YOLOv8        Object detection
+  Ultralytics   YOLO implementation
+  PyTorch       Deep-learning runtime
+  Torchvision   PyTorch computer-vision support
+  OpenCV        Video/image processing
+  NumPy         Numerical operations
+  Shapely       Polygon intersection and IoU
 
----
+------------------------------------------------------------------------
 
 ## Database
 
-```text
+``` text
 MySQL
 ```
 
-MySQL stores:
+The backend uses `mysql-connector-python` to communicate with the
+database.
 
-- Hospital accounts
-- Citizen accounts
-- CCTV cameras
-- Accident alerts
-- Severity information
-- GPS coordinates
-- Email notification status
-
----
+------------------------------------------------------------------------
 
 ## Communication
 
-The application uses:
+The project uses:
 
-- REST APIs
-- WebSockets
-- SMTP email
+-   SMTP / Gmail for email
+-   SMSMobileAPI for optional SMS
+-   Flask-SocketIO for real-time browser notifications
+-   HTTP requests for external location and SMS services
 
----
+------------------------------------------------------------------------
 
 # 🧱 Project Architecture
 
-```text
-                    ┌─────────────────────────┐
-                    │       React.js          │
-                    │       Frontend          │
-                    └────────────┬────────────┘
-                                 │
-                         REST API / WebSocket
-                                 │
-                                 ▼
-                    ┌─────────────────────────┐
-                    │        FastAPI          │
-                    │        Backend          │
-                    └────────────┬────────────┘
-                                 │
-              ┌──────────────────┼──────────────────┐
-              │                  │                  │
-              ▼                  ▼                  ▼
-       ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-       │   YOLOv8    │    │    MySQL    │    │ Gmail SMTP  │
-       │   Engine    │    │  Database   │    │   Service   │
-       └──────┬──────┘    └─────────────┘    └─────────────┘
-              │
-              ▼
-       ┌─────────────┐
-       │ OpenCV +    │
-       │ Shapely     │
-       └─────────────┘
+``` text
+                       ┌──────────────────────┐
+                       │      User / CCTV     │
+                       │  Video / Camera / SOS│
+                       └──────────┬───────────┘
+                                  │
+                                  ▼
+                       ┌──────────────────────┐
+                       │        Flask         │
+                       │    Web Application   │
+                       └──────────┬───────────┘
+                                  │
+                    ┌─────────────┼─────────────┐
+                    │             │             │
+                    ▼             ▼             ▼
+              ┌──────────┐  ┌──────────┐  ┌────────────┐
+              │ YOLOv8   │  │  MySQL   │  │ Socket.IO  │
+              │ + OpenCV │  │ Database │  │ Real-time  │
+              └────┬─────┘  └──────────┘  └────────────┘
+                   │
+                   ▼
+             ┌────────────┐
+             │  Shapely   │
+             │ IoU Logic  │
+             └─────┬──────┘
+                   │
+                   ▼
+          ┌──────────────────┐
+          │ Accident Detected│
+          └────────┬─────────┘
+                   │
+       ┌───────────┼──────────────┐
+       ▼           ▼              ▼
+  Severity      Evidence       Location
+       │           │              │
+       └───────────┼──────────────┘
+                   ▼
+          ┌──────────────────┐
+          │ Nearby Hospitals │
+          └────────┬─────────┘
+                   │
+          ┌────────┴─────────┐
+          ▼                  ▼
+      Email / SMS       Hospital Dashboard
 ```
 
----
+------------------------------------------------------------------------
 
 # 📂 Project Structure
 
-```text
-Innovation Nexus/
+``` text
+Accident-detection-yolov8-main/
 │
+├── LICENSE
 ├── README.md
+├── app.py
+├── main.py
+├── yolo_detect.py
+├── requirements.txt
+├── yolov8n.pt
+├── db_migration_accept_and_tracking.sql
 │
-├── backend/
-│   │
-│   ├── app/
-│   │   ├── api/
-│   │   ├── services/
-│   │   │   ├── alerts.py
-│   │   │   ├── detection.py
-│   │   │   └── processing.py
-│   │   │
-│   │   ├── auth.py
-│   │   ├── config.py
-│   │   ├── db.py
-│   │   ├── main.py
-│   │   ├── schemas.py
-│   │   └── websocket_manager.py
-│   │
-│   ├── storage/
-│   │   ├── clips/
-│   │   ├── screenshots/
-│   │   └── uploads/
-│   │
-│   ├── yolov8n.pt
-│   ├── requirements.txt
-│   ├── run.py
-│   └── .env.example
-│
-├── database/
-│   ├── schema.sql
-│   ├── migrate_existing.sql
-│   └── seed_notes.sql
-│
-├── frontend/
-│   │
-│   ├── src/
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   ├── styles.css
-│   │   └── lib/
-│   │       └── api.js
-│   │
-│   ├── package.json
-│   ├── package-lock.json
+├── templates/
 │   ├── index.html
-│   └── .env.example
+│   └── phone_sensor.html
 │
-├── render.yaml
-└── .gitignore
+└── uploads/
+    └── generated at runtime
 ```
 
----
+The application creates/uses:
+
+``` text
+uploads/
+static/screenshots/
+```
+
+for uploaded files and accident evidence.
+
+------------------------------------------------------------------------
 
 # 🗄️ Database
 
-The application uses the MySQL database:
+The application connects to:
 
-```text
+``` text
 accident_detection
 ```
 
-## Main Tables
+MySQL database.
 
-### hospitals
+The supplied migration file is:
 
-Stores hospital account and location information.
-
-```text
-id
-name
-email
-password
-location
-phone
-latitude
-longitude
-created_at
+``` text
+db_migration_accept_and_tracking.sql
 ```
 
-### users
+It adds support for accident alert acceptance and tracking.
 
-Stores citizen account information.
+The migration adds fields including:
 
-```text
-id
-name
-email
-password
-phone
-latitude
-longitude
-created_at
-```
-
-### cameras
-
-Stores CCTV camera information.
-
-```text
-id
-name
-location
+``` text
 status
-hospital_id
-created_at
+user_id
+accepted_by_hospital_id
+accepted_at
+notified_hospital_ids
 ```
 
-Camera status values include:
+The alert status values are:
 
-```text
+``` text
 pending
 accepted
-rejected
+resolved
 ```
 
-### alerts
+The application also expects database tables used for:
 
-Stores accident and emergency events.
+-   Users
+-   Hospitals
+-   Cameras
+-   Alerts
 
-```text
-id
-camera_id
-hospital_id
-video_name
-accident_detected
-screenshot_path
-accident_clip_path
-location
-email_sent
-severity_label
-severity_score
-created_at
-```
+The exact base-table creation SQL is not included in the uploaded
+project ZIP, so an existing compatible `accident_detection`
+database/schema is required before running the full web application.
 
----
+------------------------------------------------------------------------
 
 # 🧰 Prerequisites
 
-Before installing AccidentGuard, install:
+Before running AccidentAlert AI, install:
 
-- Python 3.11 or newer
-- Node.js 18 or newer
-- npm
-- MySQL 8 or newer
-- Git
+-   Python 3.10+ recommended
+-   MySQL Server
+-   MySQL Workbench (optional)
+-   pip
 
 Optional:
 
-- ngrok for temporary public access
+-   ngrok for temporary public access
+-   SMSMobileAPI account/API key for SMS alerts
 
----
+Check Python:
+
+``` bash
+python --version
+```
+
+Check pip:
+
+``` bash
+pip --version
+```
+
+Check MySQL:
+
+``` bash
+mysql --version
+```
+
+------------------------------------------------------------------------
 
 # 📥 Installation
 
-## 1. Clone the Repository
+## 1. Extract the Project
 
-```bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
+Extract the ZIP file and open the project folder:
+
+``` text
+Accident-detection-yolov8-main
 ```
 
-Then:
+Open this folder in VS Code.
 
-```bash
-cd "Innovation Nexus"
-```
+------------------------------------------------------------------------
 
----
+## 2. Create a Virtual Environment
 
-# 🖥️ Application Screenshots
+Windows PowerShell:
 
-## 🔐 Login & Registration
-
-The authentication interface allows users to access the platform as either a hospital operator or citizen.
-
-![AccidentGuard Login](screenshots/01-login.png)
-
----
-
-## 🏠 Dashboard
-
-The dashboard provides quick access to accident detection, live camera monitoring, alerts, analytics, and emergency services.
-
-![AccidentGuard Dashboard](screenshots/02-dashboard.png)
-
----
-
-## 🎥 Video Analysis
-
-Users can upload road footage for AI-based accident detection and severity analysis.
-
-![Video Analysis](screenshots/03-video-analysis.png)
-
----
-
-## 📡 Live Camera Detection
-
-The live camera module captures camera frames and sends them to the FastAPI backend through WebSockets for real-time AI analysis.
-
-![Live Camera Detection](screenshots/04-live-camera.png)
-
----
-
-## 📷 CCTV Camera Management
-
-Hospital operators can register and manage CCTV camera sources.
-
-![Camera Management](screenshots/05-cameras.png)
-
----
-
-## 🚨 Accident Alerts
-
-Detected incidents are displayed with accident information, severity, location, evidence, and notification status.
-
-![Accident Alerts](screenshots/06-alerts.png)
-
----
-
-## 📊 Analytics
-
-The analytics dashboard provides visual insights into accident trends and severity distribution.
-
-![Analytics Dashboard](screenshots/07-analytics.png)
-
----
-
-## 🆘 Emergency SOS
-
-Citizens can send an emergency SOS using their current GPS location to help identify nearby hospitals.
-
-![Emergency SOS](screenshots/08-sos.png)
-
-# 🗃️ Database Setup
-
-Open MySQL Workbench or MySQL command line.
-
-Create the database and tables using:
-
-```text
-database/schema.sql
-```
-
-You can also execute:
-
-```sql
-CREATE DATABASE accident_detection;
-```
-
-Then select it:
-
-```sql
-USE accident_detection;
-```
-
-Run the schema SQL file.
-
-If you already have an older database version, use:
-
-```text
-database/migrate_existing.sql
-```
-
-to apply the required changes.
-
----
-
-# 🐍 Backend Setup
-
-Open PowerShell in the project root:
-
-```powershell
-cd "backend"
-```
-
-Create a Python virtual environment:
-
-```powershell
+``` powershell
 python -m venv venv
 ```
 
 Activate it:
 
-```powershell
+``` powershell
 .\venv\Scripts\Activate.ps1
 ```
 
-If PowerShell blocks activation, you can run the Python executable directly:
+If PowerShell blocks activation:
 
-```powershell
-.\venv\Scripts\python.exe run.py
+``` powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-Install backend dependencies:
+Then activate again.
 
-```powershell
-pip install -r requirements.txt
+------------------------------------------------------------------------
+
+# 🐍 Backend Setup
+
+This project uses **Flask**, not FastAPI.
+
+Install the dependencies listed in:
+
+``` text
+requirements.txt
 ```
-
----
-
-# ⚙️ Backend Environment Configuration
-
-Inside the `backend` folder, copy:
-
-```text
-.env.example
-```
-
-to:
-
-```text
-.env
-```
-
-PowerShell:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Configure your environment variables.
-
-Example:
-
-```env
-APP_NAME=AccidentGuard API
-APP_ENV=development
-
-SECRET_KEY=your-secret-key
-
-FRONTEND_ORIGIN=http://localhost:5173
-
-MYSQL_HOST=localhost
-MYSQL_PORT=3306
-MYSQL_USER=root
-MYSQL_PASSWORD=YOUR_MYSQL_PASSWORD
-MYSQL_DATABASE=accident_detection
-
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=465
-SMTP_USER=yourgmail@gmail.com
-SMTP_PASSWORD=YOUR_GMAIL_APP_PASSWORD
-ALERT_FALLBACK_EMAIL=yourgmail@gmail.com
-
-YOLO_MODEL_PATH=./yolov8n.pt
-YOLO_CONFIDENCE=0.35
-ACCIDENT_IOU_THRESHOLD=0.37
-PROCESS_EVERY_N_FRAMES=5
-
-UPLOAD_DIR=./storage/uploads
-SCREENSHOT_DIR=./storage/screenshots
-CLIP_DIR=./storage/clips
-
-MAX_UPLOAD_MB=250
-```
-
----
-
-# 🔐 Gmail Configuration
-
-If email alerts are enabled, use a Gmail App Password.
-
-Do not use your normal Gmail password.
-
-The required configuration is:
-
-```env
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=465
-SMTP_USER=yourgmail@gmail.com
-SMTP_PASSWORD=your-app-password
-ALERT_FALLBACK_EMAIL=yourgmail@gmail.com
-```
-
-Keep these credentials private.
-
----
-
-# ▶️ Running the Backend
-
-From:
-
-```text
-backend/
-```
-
-run:
-
-```powershell
-python run.py
-```
-
-The API will normally be available at:
-
-```text
-http://localhost:8000
-```
-
----
-
-# 🌐 Frontend Setup
-
-Open another terminal.
-
-Go to:
-
-```powershell
-cd "frontend"
-```
-
-Install dependencies:
-
-```powershell
-npm install
-```
-
-Create the environment file:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Configure:
-
-```env
-VITE_API_URL=http://localhost:8000
-```
-
----
-
-# ▶️ Running the Frontend
 
 Run:
 
-```powershell
-npm run dev
+``` powershell
+pip install -r requirements.txt
 ```
 
-Vite will display a URL similar to:
+The supplied requirements file contains:
 
-```text
-http://localhost:5173/
+``` text
+opencv-python
+torch
+torchvision
+torchaudio
+ultralytics
+shapely
+python-dotenv
+requests
 ```
 
-Open it in your browser.
+The main Flask application also imports:
 
----
-
-# 🏗️ Production Build
-
-To build the React application:
-
-```powershell
-cd frontend
-npm run build
+``` text
+flask
+flask-cors
+flask-socketio
+mysql-connector-python
+bcrypt
 ```
 
-The production files will be generated inside:
+If these packages are not already installed, install them with:
 
-```text
-frontend/dist/
+``` powershell
+pip install flask flask-cors flask-socketio mysql-connector-python bcrypt
 ```
 
-If the FastAPI application is configured to serve the production frontend, the application can then be accessed through the FastAPI server.
+------------------------------------------------------------------------
 
----
+# 🗃️ MySQL Setup
+
+Create the database:
+
+``` sql
+CREATE DATABASE accident_detection;
+```
+
+Select it:
+
+``` sql
+USE accident_detection;
+```
+
+The application expects tables for users, hospitals, cameras and alerts.
+
+The supplied file:
+
+``` text
+db_migration_accept_and_tracking.sql
+```
+
+contains an additional migration for alert acceptance and live tracking.
+
+Run it only after the required base tables already exist.
+
+------------------------------------------------------------------------
+
+# ⚙️ Email Configuration
+
+The application contains email notification functionality using Gmail
+SMTP.
+
+For security, **do not publish real Gmail credentials in GitHub or in
+the README**.
+
+The preferred production approach is to move credentials to environment
+variables.
+
+Example:
+
+``` text
+SENDER_EMAIL=your-gmail-address
+SENDER_PASSWORD=your-gmail-app-password
+```
+
+For Gmail, use an App Password rather than your normal Gmail password.
+
+------------------------------------------------------------------------
+
+# ▶️ Running the Web Application
+
+The main web application is:
+
+``` text
+app.py
+```
+
+From the project directory run:
+
+``` powershell
+python app.py
+```
+
+The Flask application normally starts on:
+
+``` text
+http://127.0.0.1:5000
+```
+
+Open the URL in your browser.
+
+------------------------------------------------------------------------
+
+# 🎥 Standalone Video Processing
+
+The project also contains:
+
+``` text
+main.py
+```
+
+It calls:
+
+``` text
+yolo_detect.py
+```
+
+and expects:
+
+``` text
+sample_video.mp4
+```
+
+with an output file:
+
+``` text
+output_video_v8.mp4
+```
+
+Run:
+
+``` powershell
+python main.py
+```
+
+However, the standalone `yolo_detect.py` currently contains a database
+lookup that references `camera_id` without defining it inside that
+function. Therefore, the standalone script may require correction before
+it can reliably execute the complete email/location workflow.
+
+For the complete web application, use:
+
+``` powershell
+python app.py
+```
+
+------------------------------------------------------------------------
 
 # 📚 API Documentation
 
-FastAPI automatically generates interactive Swagger documentation.
+The Flask application exposes REST endpoints under `/api`.
 
-Start the backend and open:
+The current application includes endpoints such as:
 
-```text
-http://localhost:8000/docs
-```
+  Method   Endpoint                            Purpose
+  -------- ----------------------------------- -------------------------
+  POST     `/api/register`                     Hospital registration
+  POST     `/api/login`                        Hospital login
+  POST     `/api/logout`                       Logout
+  GET      `/api/me`                           Current session/user
+  POST     `/api/user/register`                Citizen registration
+  POST     `/api/user/login`                   Citizen login
+  POST     `/api/cameras/request`              Request/register camera
+  GET      `/api/cameras/my`                   Get hospital cameras
+  POST     `/api/cameras/accept/<camera_id>`   Accept camera
+  POST     `/api/upload`                       Upload video
+  GET      `/api/status/<alert_id>`            Check processing status
+  GET      `/api/alerts`                       Get alerts
+  POST     `/api/alerts/<alert_id>/accept`     Accept an alert
+  POST     `/api/alerts/<alert_id>/resolve`    Resolve an alert
+  POST     `/api/sos`                          Send SOS
+  POST     `/api/motion-alert`                 Motion-based alert
+  POST     `/api/hardware/alert`               External hardware alert
+  GET      `/api/stats`                        Hospital statistics
 
-This provides an interactive interface for testing API endpoints.
-
----
-
-# 🔌 Main API Endpoints
-
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | `/api/health` | Backend health check |
-| POST | `/api/register` | Hospital registration |
-| POST | `/api/login` | Hospital login |
-| POST | `/api/user/register` | Citizen registration |
-| POST | `/api/user/login` | Citizen login |
-| GET | `/api/me` | Current user |
-| POST | `/api/cameras/request` | Register camera |
-| GET | `/api/cameras/my` | Get hospital cameras |
-| POST | `/api/upload` | Upload video |
-| GET | `/api/status/{alert_id}` | Get processing status |
-| GET | `/api/alerts` | Get alerts |
-| POST | `/api/sos` | Send SOS |
-| GET | `/api/stats` | Get analytics |
-| GET | `/api/hospitals/nearest` | Find nearby hospitals |
-| WebSocket | `/ws` | Real-time events |
-
----
+------------------------------------------------------------------------
 
 # 📡 Live Camera Detection
 
-The Live Camera feature uses the browser camera and WebSockets.
+The project uses **Flask-SocketIO** for real-time communication.
 
-The workflow is:
+The browser can send live camera frames to the backend.
 
-```text
+The flow is:
+
+``` text
 Browser Camera
       │
       ▼
-Video Frame Capture
+Capture Frame
       │
       ▼
-JPEG Frame
+Socket.IO
       │
       ▼
-WebSocket
+Flask Backend
       │
       ▼
-FastAPI
+YOLOv8 Detection
       │
       ▼
-YOLOv8
+Accident Analysis
       │
       ▼
-Detection Result
+Real-Time Event
       │
       ▼
-React Dashboard
+Hospital Dashboard
 ```
 
-The WebSocket endpoint is:
+The backend contains Socket.IO handlers for:
 
-```text
-/ws
+-   Joining rooms
+-   GPS updates
+-   Live location sharing
+-   Live frame processing
+-   Starting live detection
+-   Stopping live detection
+-   Disconnect handling
+
+------------------------------------------------------------------------
+
+# 📍 GPS and Nearby Hospitals
+
+The application can use GPS coordinates supplied by the browser or
+client.
+
+If GPS coordinates are not supplied, the application can attempt to
+obtain an approximate location using:
+
+``` text
+api64.ipify.org
++
+ip-api.com
 ```
 
-The frontend periodically captures frames and sends them to the backend.
+GPS/location information can be used to:
 
-The backend processes the frames and returns detection events.
+-   Identify accident location
+-   Find nearby hospitals
+-   Send location in alerts
+-   Support SOS
+-   Support live location sharing
 
----
-
-# 📍 GPS Location
-
-The application can use the browser's Geolocation API.
-
-GPS information can be used for:
-
-- Accident location
-- SOS location
-- Nearby hospital discovery
-- Hospital distance calculations
-
-The coordinates are represented as:
-
-```text
-Latitude
-Longitude
-```
-
----
+------------------------------------------------------------------------
 
 # 🏥 Nearby Hospital Detection
 
-Registered hospitals can have GPS coordinates stored in the database.
-
-When an emergency event occurs, the backend can identify nearby hospitals.
+The application calculates distances between an incident and registered
+hospitals using the **Haversine formula**.
 
 The workflow is:
 
-```text
-Accident/SOS
-     │
-     ▼
-GPS Coordinates
-     │
-     ▼
+``` text
+Accident Location
+       │
+       ▼
+Latitude + Longitude
+       │
+       ▼
 Registered Hospitals
-     │
-     ▼
-Distance Calculation
-     │
-     ▼
-Nearest Hospitals
-     │
-     ▼
-Emergency Notification
+       │
+       ▼
+Haversine Distance
+       │
+       ▼
+Sort by Distance
+       │
+       ▼
+Nearest 3 Hospitals
 ```
 
----
+The application attempts to notify up to the nearest three hospitals
+with valid coordinates.
+
+------------------------------------------------------------------------
 
 # 🚨 SOS Emergency System
 
-Citizens can trigger an emergency SOS.
+Citizens can trigger an SOS alert using:
 
-The workflow is:
-
-```text
-Citizen presses SOS
-        │
-        ▼
-Browser requests GPS
-        │
-        ▼
-Latitude + Longitude
-        │
-        ▼
-FastAPI
-        │
-        ▼
-Find nearby hospitals
-        │
-        ▼
-Calculate distance
-        │
-        ▼
-Send notification
-        │
-        ▼
-Store alert
-        │
-        ▼
-Notify hospital clients
+``` text
+POST /api/sos
 ```
 
----
+The alert can contain:
+
+-   User information
+-   GPS latitude
+-   GPS longitude
+-   Location information
+
+The backend can identify nearby hospitals and communicate the emergency
+event.
+
+The general flow is:
+
+``` text
+Citizen
+   │
+   ▼
+SOS Button
+   │
+   ▼
+GPS Coordinates
+   │
+   ▼
+Flask API
+   │
+   ▼
+Nearest Hospitals
+   │
+   ▼
+Email / SMS / Real-Time Alert
+```
+
+------------------------------------------------------------------------
+
+# 📱 Phone Crash Sensor
+
+The project includes:
+
+``` text
+templates/phone_sensor.html
+```
+
+This page uses the browser's motion sensor and GPS.
+
+The sensor monitors acceleration magnitude.
+
+The configured impact threshold is:
+
+``` text
+2.5 g
+```
+
+When the threshold is crossed and GPS is available, the page can send an
+alert to:
+
+``` text
+/api/hardware/alert
+```
+
+using an API key.
+
+The page is intended to demonstrate phone-based crash detection without
+additional hardware.
+
+------------------------------------------------------------------------
+
+# 🔌 Hardware Alert API
+
+The backend provides:
+
+``` text
+POST /api/hardware/alert
+```
+
+for external hardware or sensor integrations.
+
+The phone sensor page uses this endpoint.
+
+The request can contain:
+
+``` text
+device_id
+lat
+lon
+impact_g
+```
+
+The API can then trigger the emergency alert workflow.
+
+An API key is expected for hardware-originated alerts.
+
+------------------------------------------------------------------------
 
 # 📧 Email Notifications
 
-AccidentGuard supports email notifications through SMTP.
+The application uses Gmail SMTP for emergency email notifications.
 
-Gmail configuration:
+Email alerts can include:
 
-```env
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=465
+-   Accident detected message
+-   Severity level
+-   Severity score
+-   Location
+-   Detection time
+-   Nearby hospitals
+-   Approximate distance
+-   Approximate ETA
+-   Accident screenshot
+-   Accident video clip
+
+The email subject is generated using the severity level, for example:
+
+``` text
+ACCIDENT [HIGH] - Emergency Alert
 ```
 
-Sender:
+Email functionality requires valid SMTP credentials.
 
-```env
-SMTP_USER=yourgmail@gmail.com
+------------------------------------------------------------------------
+
+# 📲 SMS Notifications
+
+The application contains optional SMS support using:
+
+``` text
+SMSMobileAPI
 ```
 
-Password:
+The API key is read from:
 
-```env
-SMTP_PASSWORD=your-app-password
+``` text
+SMS_API_KEY
 ```
 
-Fallback recipient:
+Example Windows PowerShell configuration:
 
-```env
-ALERT_FALLBACK_EMAIL=yourbackupemail@gmail.com
+``` powershell
+$env:SMS_API_KEY="your_api_key"
 ```
 
-Email functionality depends on valid SMTP configuration.
+If no API key is configured, SMS sending is skipped while the rest of
+the alert workflow can continue.
 
----
+The default country code configured in the project is:
 
-# 📈 Analytics Dashboard
-
-Hospital operators can view operational analytics.
-
-The analytics section can display information such as:
-
-- Total videos
-- Total accidents
-- Emails sent
-- Accident trends
-- Severity distribution
-- Daily activity
-
-The frontend uses:
-
-```text
-Recharts
+``` text
+91
 ```
 
-for visualization.
+for Indian phone numbers without a country code.
 
----
+------------------------------------------------------------------------
 
-# 🎥 Accident Evidence
+# 📈 Analytics
 
-When an accident is detected, the backend can create evidence files.
+The application provides hospital statistics through:
+
+``` text
+/api/stats
+```
+
+The frontend uses **Chart.js** for dashboard visualization.
+
+The application can expose operational information such as:
+
+-   Accident counts
+-   Email notification status
+-   Alert information
+-   Hospital-related statistics
+
+The exact charts and dashboard content are implemented in:
+
+``` text
+templates/index.html
+```
+
+------------------------------------------------------------------------
+
+# 🎥 Evidence Generation
+
+When an accident is detected, the application can create evidence files.
 
 ## Uploaded videos
 
-```text
-backend/storage/uploads/
+``` text
+uploads/
 ```
 
 ## Accident screenshots
 
-```text
-backend/storage/screenshots/
+``` text
+static/screenshots/accident_<alert_id>.png
 ```
 
 ## Accident clips
 
-```text
-backend/storage/clips/
+``` text
+static/screenshots/clip_<alert_id>.mp4
 ```
 
-The paths are associated with alert records in MySQL.
+The screenshot and clip paths are stored with the corresponding alert
+record.
 
----
+------------------------------------------------------------------------
 
 # 🧪 Testing
 
-## Test Backend
+## Test the Web Application
+
+Start:
+
+``` powershell
+python app.py
+```
 
 Open:
 
-```text
-http://localhost:8000/api/health
+``` text
+http://127.0.0.1:5000
 ```
 
-The backend should return a successful health response.
+Test:
 
----
+1.  Hospital registration
+2.  Hospital login
+3.  Citizen registration
+4.  Citizen login
+5.  Video upload
+6.  Accident processing
+7.  Alert display
+8.  Severity display
+9.  Hospital acceptance
+10. Alert resolution
+11. SOS
+12. Phone sensor
+13. Analytics
+14. Live camera
 
-## Test Swagger
+------------------------------------------------------------------------
 
-Open:
+# 🌐 Temporary Deployment with ngrok
 
-```text
-http://localhost:8000/docs
+For a hackathon demonstration, ngrok can be used to expose the Flask
+application temporarily.
+
+First run:
+
+``` powershell
+python app.py
 ```
 
-Use the Swagger interface to test API endpoints.
+Then in another terminal:
 
----
-
-## Test Frontend
-
-Open:
-
-```text
-http://localhost:5173
-```
-
-Then test:
-
-1. Registration
-2. Login
-3. Dashboard
-4. Video Analysis
-5. Live Camera
-6. Cameras
-7. Alerts
-8. Analytics
-9. SOS
-10. Email notifications
-
----
-
-# 🌐 Temporary Public Deployment with ngrok
-
-For demonstrations, the application can be temporarily exposed to the internet using ngrok.
-
-## Start FastAPI
-
-First start the backend:
-
-```powershell
-cd backend
-.\venv\Scripts\Activate.ps1
-python run.py
-```
-
-The backend should run on:
-
-```text
-http://localhost:8000
-```
-
----
-
-## Start ngrok
-
-Open a second PowerShell terminal.
-
-Run:
-
-```powershell
-ngrok http 8000
+``` powershell
+ngrok http 5000
 ```
 
 ngrok will provide a public HTTPS URL similar to:
 
-```text
-https://example.ngrok-free.dev
+``` text
+https://example.ngrok-free.app
 ```
 
-Use that URL to access the application if your FastAPI deployment is serving the frontend.
+Use that URL for temporary external access.
 
----
+------------------------------------------------------------------------
 
 # ⚠️ ngrok Important Notes
 
-The FastAPI terminal must remain running.
+The Flask application must remain running.
 
-The ngrok terminal must also remain running.
+The ngrok tunnel must also remain running.
 
-If either process is closed, the temporary public URL will stop working.
+If the terminal running either process is closed, the temporary public
+URL stops working.
 
-The free ngrok URL may also change when a new tunnel is created.
+The public URL may change when a new tunnel is created.
 
----
+------------------------------------------------------------------------
 
 # ☁️ Production Deployment
 
-The repository contains:
+This project is currently structured primarily as a Flask application
+and is suitable for development/hackathon demonstration.
 
-```text
-render.yaml
+For production deployment, the application should be served using a
+production WSGI server and configured with:
+
+-   Secure environment variables
+-   Production MySQL database
+-   HTTPS
+-   Strong authentication
+-   Secure API keys
+-   Persistent file/object storage
+-   Proper logging
+-   Monitoring
+-   Rate limiting
+-   Error handling
+
+The current source code should be reviewed and hardened before
+production use.
+
+------------------------------------------------------------------------
+
+# 🔐 Environment Variables
+
+The current project uses environment variables for some optional
+configuration, including:
+
+``` text
+SMS_API_KEY
 ```
 
-which can be used as part of deployment configuration.
+The email credentials in the uploaded source are currently hard-coded.
 
-For production deployment, configure environment variables through the hosting platform rather than committing `.env`.
+For a secure version, move all secrets to environment variables:
 
-Required configuration may include:
-
-```text
+``` text
+SECRET_KEY
 MYSQL_HOST
 MYSQL_PORT
 MYSQL_USER
 MYSQL_PASSWORD
 MYSQL_DATABASE
-SECRET_KEY
-SMTP_USER
-SMTP_PASSWORD
-ALERT_FALLBACK_EMAIL
-FRONTEND_ORIGIN
+SENDER_EMAIL
+SENDER_PASSWORD
+SMS_API_KEY
+HARDWARE_API_KEY
 ```
 
-The frontend also requires:
+Never commit real secrets to GitHub.
 
-```env
-VITE_API_URL=<BACKEND_URL>
-```
-
----
+------------------------------------------------------------------------
 
 # 🔒 Security
 
-Never commit secrets to GitHub.
+Before publishing the project:
 
-Do not upload:
+-   Remove hard-coded email credentials.
+-   Change the Flask secret key.
+-   Configure database credentials securely.
+-   Use environment variables for API keys.
+-   Change the hardware API key from its default value.
+-   Use HTTPS for public deployments.
+-   Restrict CORS in production.
+-   Add proper authentication and authorization checks.
+-   Avoid exposing private database information.
+-   Rotate any credentials that have already been exposed.
 
-```text
-backend/.env
-```
-
-The `.env` file may contain:
-
-- Database passwords
-- SMTP credentials
-- JWT secret
-- API keys
-
-Use:
-
-```text
-backend/.env.example
-```
-
-for sharing configuration structure.
-
----
-
-# 🚫 Files That Should Not Be Uploaded to GitHub
-
-Do not commit:
-
-```text
-backend/venv/
-frontend/node_modules/
-backend/.env
-backend/storage/uploads/
-backend/storage/screenshots/
-backend/storage/clips/
-```
-
-Large generated files and private credentials should remain outside the repository.
-
----
-
-# 🔍 Verify Before GitHub Push
-
-Run:
-
-```powershell
-git status
-```
-
-Check that sensitive files are not included.
-
-If `.env` is already tracked by Git, remove it from tracking:
-
-```powershell
-git rm --cached backend/.env
-```
-
-Then commit the change.
-
----
+------------------------------------------------------------------------
 
 # ⚠️ Project Limitations
 
-AccidentGuard is currently a prototype/academic/innovation project.
-
-The following limitations should be considered.
+AccidentAlert AI is a prototype and should not be treated as a
+safety-critical emergency system.
 
 ## AI limitations
 
-The current accident detection logic uses object detection and spatial overlap heuristics.
+The current accident detection mechanism uses:
 
-It is not a fully trained accident classification model.
+``` text
+YOLOv8 object detection
++
+Person/vehicle bounding-box IoU
+```
 
----
+It does not include a dedicated trained accident-classification model in
+the uploaded project.
 
-## CCTV limitations
+------------------------------------------------------------------------
 
-The current browser live camera feature does not represent a complete production-grade IP CCTV/RTSP infrastructure.
+## False positives / false negatives
 
----
+Object overlap alone cannot reliably distinguish every real accident
+from:
+
+-   People standing near vehicles
+-   Crowded scenes
+-   Vehicles passing close to people
+-   Camera perspective effects
+-   Occlusions
+-   Unusual road conditions
+
+A production system requires temporal analysis and extensive validation.
+
+------------------------------------------------------------------------
+
+## Location limitations
+
+IP-based geolocation is approximate and should not be considered
+equivalent to GPS.
+
+------------------------------------------------------------------------
 
 ## ETA limitations
 
-Hospital ETA calculations may use approximate distance/travel assumptions and are not necessarily based on real-time traffic conditions.
+The ambulance/hospital ETA is a simple distance-based estimate using an
+assumed speed of:
 
----
+``` text
+40 km/h
+```
 
-## Storage limitations
+It does not represent real-time traffic-aware routing.
 
-Uploaded videos and generated evidence may be stored locally.
+------------------------------------------------------------------------
 
-Production deployments should use persistent cloud/object storage.
+## SMS limitations
 
----
+SMS depends on the external SMSMobileAPI service and a valid API key.
 
-## Safety limitations
+------------------------------------------------------------------------
 
-This system should not be relied upon as the sole mechanism for emergency response.
+## Standalone script limitation
 
-A production system would require extensive validation, testing, monitoring, security hardening, and regulatory review.
+The current `yolo_detect.py` references `camera_id` inside
+`process_video()` without defining it there, so the standalone `main.py`
+workflow may require correction.
 
----
+------------------------------------------------------------------------
+
+## Security limitations
+
+The uploaded source contains sensitive credentials and a hard-coded
+Flask secret key.
+
+These should be changed before public deployment.
+
+------------------------------------------------------------------------
 
 # 🚀 Future Enhancements
 
-Possible future improvements include:
+Possible improvements include:
 
-- Dedicated accident classification model
-- Custom accident dataset
-- Accident tracking
-- Real-time object tracking
-- IP CCTV / RTSP integration
-- Multiple simultaneous cameras
-- Better false-positive reduction
-- Real-time traffic-aware ETA
-- Google Maps integration
-- Ambulance integration
-- SMS alerts
-- WhatsApp notifications
-- Push notifications
-- Hospital response acknowledgement
-- Cloud storage
-- Redis-based WebSocket scaling
-- Admin dashboard
-- Advanced incident reports
-- GPU inference
-- Model performance monitoring
-- Automated model retraining
-- Advanced AI-based accident classification
+-   Dedicated accident classification model
+-   Custom accident dataset
+-   Temporal video/action analysis
+-   Object tracking
+-   Better false-positive reduction
+-   Confidence calibration
+-   Real CCTV/RTSP camera integration
+-   Multiple simultaneous camera processing
+-   Real-time traffic-aware ambulance ETA
+-   Google Maps or other routing integration
+-   Ambulance integration
+-   Push notifications
+-   WhatsApp/SMS expansion
+-   Cloud storage for evidence
+-   GPU inference
+-   Production authentication
+-   Role-based access control
+-   Admin dashboard
+-   Advanced incident reporting
+-   Model performance monitoring
+-   Automated model retraining
+-   Real-world validation and benchmarking
 
----
+------------------------------------------------------------------------
 
-# 🔄 Complete System Workflow
+# 🔄 Project Workflow
 
-## Hospital Workflow
+## 🏥 Hospital Workflow
 
-```text
+``` text
 Hospital Registration
         │
         ▼
@@ -1315,16 +1298,16 @@ Hospital Dashboard
         ├───────────────┐
         │               │
         ▼               ▼
- Register Camera     Upload Video
+ Register Camera    Upload Video
         │               │
         ▼               ▼
- Live Camera       YOLOv8 Analysis
+ Live Detection     YOLOv8
         │               │
         │               ▼
-        │         Accident Detection
+        │        Accident Detection
         │               │
         │               ▼
-        │        Severity Analysis
+        │        Severity Assessment
         │               │
         │               ▼
         │        Evidence Generation
@@ -1332,276 +1315,310 @@ Hospital Dashboard
         └───────┬───────┘
                 │
                 ▼
-          Alert Dashboard
+          Accident Alert
                 │
                 ▼
-          Email Notification
+        Accept / Resolve
+                │
+                ▼
+        Emergency Response
 ```
 
----
+------------------------------------------------------------------------
 
-# 👤 Citizen Workflow
+## 👤 Citizen Workflow
 
-```text
+``` text
 Citizen Registration
         │
         ▼
 Citizen Login
         │
-        ▼
-Emergency Dashboard
-        │
-        ├───────────────┐
-        │               │
-        ▼               ▼
- Analyze Video       Send SOS
-        │               │
-        ▼               ▼
-    YOLOv8          GPS Location
-        │               │
-        ▼               ▼
- Accident Check    Find Hospitals
-        │               │
-        └───────┬───────┘
-                │
-                ▼
-          Emergency Response
+        ├───────────────────┐
+        │                   │
+        ▼                   ▼
+   Analyze Video         Send SOS
+        │                   │
+        ▼                   ▼
+      YOLOv8             GPS Location
+        │                   │
+        ▼                   ▼
+ Accident Analysis    Find Hospitals
+        │                   │
+        └─────────┬─────────┘
+                  │
+                  ▼
+          Emergency Alert
 ```
 
----
+------------------------------------------------------------------------
+
+## 📱 Phone Sensor Workflow
+
+``` text
+Phone Motion Sensor
+        │
+        ▼
+Acceleration Measurement
+        │
+        ▼
+Impact > 2.5g
+        │
+        ▼
+GPS Available?
+        │
+        ▼
+Hardware Alert API
+        │
+        ▼
+Emergency Processing
+        │
+        ▼
+Hospital Notification
+```
+
+------------------------------------------------------------------------
 
 # 🧩 Core Components
 
-| Component | Technology |
-|---|---|
-| Frontend | React.js + Vite |
-| Backend | FastAPI |
-| Database | MySQL |
-| AI | YOLOv8 |
-| Video Processing | OpenCV |
-| Geometry | Shapely |
-| Charts | Recharts |
-| Icons | Lucide React |
-| Authentication | JWT + bcrypt |
-| Real-Time Communication | WebSockets |
-| Location | Browser Geolocation API |
-| Email | Gmail SMTP |
-| Temporary Public Access | ngrok |
-| Deployment Configuration | Render |
+  Component                 Technology
+  ------------------------- -------------------------
+  Web Application           Flask
+  Frontend                  HTML + CSS + JavaScript
+  Real-Time Communication   Flask-SocketIO
+  AI                        YOLOv8
+  Deep Learning             PyTorch
+  Video Processing          OpenCV
+  Geometry                  Shapely
+  Database                  MySQL
+  Database Driver           mysql-connector-python
+  Authentication            Flask Session + bcrypt
+  Charts                    Chart.js
+  Maps                      Leaflet
+  Location                  IP Geolocation + GPS
+  Email                     Gmail SMTP
+  SMS                       SMSMobileAPI
+  HTTP Requests             Requests
+  Numerical Processing      NumPy
 
----
+------------------------------------------------------------------------
 
 # 📦 Dependency Installation Summary
 
-## Backend
+Create and activate the environment:
 
-```powershell
-cd backend
+``` powershell
 python -m venv venv
 .\venv\Scripts\Activate.ps1
+```
+
+Install the supplied requirements:
+
+``` powershell
 pip install -r requirements.txt
-python run.py
 ```
 
-## Frontend
+Install the Flask/database packages required by `app.py`:
 
-```powershell
-cd frontend
-npm install
-npm run dev
+``` powershell
+pip install flask flask-cors flask-socketio mysql-connector-python bcrypt
 ```
 
-## Production frontend
+Run the application:
 
-```powershell
-cd frontend
-npm run build
+``` powershell
+python app.py
 ```
 
----
+------------------------------------------------------------------------
 
 # 🆘 Troubleshooting
 
-## `ModuleNotFoundError: No module named 'uvicorn'`
+## `ModuleNotFoundError: No module named 'flask'`
 
-Activate the backend environment and install requirements:
+Run:
 
-```powershell
-cd backend
-.\venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+``` powershell
+pip install flask
 ```
 
----
+------------------------------------------------------------------------
+
+## `ModuleNotFoundError: No module named 'flask_socketio'`
+
+Run:
+
+``` powershell
+pip install flask-socketio
+```
+
+------------------------------------------------------------------------
 
 ## `ModuleNotFoundError: No module named 'mysql'`
 
-Install the MySQL connector:
+Run:
 
-```powershell
+``` powershell
 pip install mysql-connector-python
 ```
 
-Or reinstall all requirements:
+------------------------------------------------------------------------
 
-```powershell
-pip install -r requirements.txt
+## `ModuleNotFoundError: No module named 'bcrypt'`
+
+Run:
+
+``` powershell
+pip install bcrypt
 ```
 
----
+------------------------------------------------------------------------
 
-## `npm is not recognized`
+## YOLO model cannot be loaded
 
-Make sure Node.js is installed and restart PowerShell.
+Make sure:
 
-Check:
-
-```powershell
-node --version
-npm --version
+``` text
+yolov8n.pt
 ```
 
----
+is present in the project root.
 
-## React page is blank
+The application loads:
 
-Open browser developer tools:
-
-```text
-F12
+``` python
+YOLO("yolov8n.pt")
 ```
 
-Then select:
-
-```text
-Console
-```
-
-Look for red JavaScript errors.
-
----
-
-## Backend API is not responding
-
-Check:
-
-```text
-http://localhost:8000/api/health
-```
-
-Also verify that:
-
-```powershell
-python run.py
-```
-
-is still running.
-
----
+------------------------------------------------------------------------
 
 ## MySQL connection error
 
-Check:
+Check that:
 
-```env
-MYSQL_HOST=localhost
-MYSQL_PORT=3306
-MYSQL_USER=root
-MYSQL_PASSWORD=YOUR_PASSWORD
-MYSQL_DATABASE=accident_detection
-```
+-   MySQL Server is running.
+-   Database `accident_detection` exists.
+-   Required tables exist.
+-   The credentials configured in `app.py` are correct.
 
-Also make sure the MySQL server is running.
+------------------------------------------------------------------------
 
----
+## Video cannot be opened
 
-## Live Camera does not work
+Check that:
 
-Check:
+-   The video file exists.
+-   The file format is supported by OpenCV.
+-   The upload directory exists.
+-   The video is not corrupted.
 
-- Browser camera permission
-- HTTPS/public URL when required
-- FastAPI server
-- WebSocket connection
-- Browser console
-- Correct frontend API URL
-
----
+------------------------------------------------------------------------
 
 ## Email does not work
 
-Verify:
+Check:
 
-```env
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=465
-SMTP_USER=yourgmail@gmail.com
-SMTP_PASSWORD=your-app-password
-ALERT_FALLBACK_EMAIL=recipient@gmail.com
+-   Gmail SMTP settings.
+-   Sender email.
+-   Gmail App Password.
+-   Recipient email.
+-   Internet connection.
+
+------------------------------------------------------------------------
+
+## SMS does not work
+
+Check:
+
+``` text
+SMS_API_KEY
 ```
 
-For Gmail, use an App Password rather than the normal account password.
+is configured and valid.
 
----
+If it is not configured, the application intentionally skips SMS
+sending.
+
+------------------------------------------------------------------------
+
+## Phone sensor does not work
+
+Check:
+
+-   Browser motion permissions.
+-   GPS permissions.
+-   HTTPS/public access where required by the browser.
+-   `SERVER_URL` in `phone_sensor.html`.
+-   `API_KEY` matches the backend hardware API configuration.
+
+------------------------------------------------------------------------
 
 # 🎯 Project Goal
 
-The primary goal of AccidentGuard is to demonstrate how artificial intelligence, real-time communication, GPS services, and emergency response systems can be combined to create a technology-assisted accident response platform.
+The primary goal of AccidentAlert AI is to demonstrate how computer
+vision, real-time communication, location services, hospital discovery,
+and emergency notifications can be combined into an accident-response
+platform.
 
-The project demonstrates the integration of:
+The central concept is:
 
-```text
-Artificial Intelligence
-        +
-Computer Vision
-        +
-Real-Time Communication
-        +
-GPS
-        +
-Hospital Network
-        +
-Emergency Alerts
-        +
-Web Application
-        +
-Database
+``` text
+Detect
+  ↓
+Assess
+  ↓
+Locate
+  ↓
+Find Nearby Hospitals
+  ↓
+Alert
+  ↓
+Hospital Response
+  ↓
+Resolve
 ```
 
----
+------------------------------------------------------------------------
 
 # 🏆 Project Highlights
 
-AccidentGuard demonstrates a complete full-stack AI application involving:
+AccidentAlert AI demonstrates the integration of:
 
-- Computer vision
-- YOLOv8 object detection
-- Video processing
-- Real-time WebSockets
-- React.js frontend
-- FastAPI backend
-- MySQL database
-- GPS-based hospital discovery
-- Emergency SOS
-- Email notifications
-- Accident evidence generation
-- Severity scoring
-- Analytics dashboard
+-   YOLOv8 object detection
+-   OpenCV video processing
+-   Person/vehicle IoU analysis
+-   Rule-based severity scoring
+-   Accident screenshot generation
+-   Accident video clip generation
+-   GPS and IP-based location
+-   Nearby hospital discovery
+-   Haversine distance calculation
+-   Email emergency alerts
+-   Optional SMS alerts
+-   Flask-SocketIO real-time communication
+-   Hospital camera management
+-   Hospital alert acceptance/resolution
+-   Citizen SOS
+-   Browser phone crash sensing
+-   External hardware alert API
+-   MySQL data storage
+-   Dashboard analytics
+-   Leaflet maps
+-   Chart.js visualizations
 
----
+------------------------------------------------------------------------
 
 # 📜 License
 
 See the project's `LICENSE` file for the applicable license.
 
----
+------------------------------------------------------------------------
 
-# 👨‍💻 AccidentGuard
+# 🚨 AccidentAlert AI
 
 ### AI-Based Accident Detection & Emergency Response System
 
 Built with:
 
-**React.js • FastAPI • MySQL • YOLOv8 • OpenCV • WebSockets • GPS • SMTP**
-
----
+**Python • Flask • YOLOv8 • OpenCV • MySQL • Flask-SocketIO • Shapely •
+GPS • SMTP**

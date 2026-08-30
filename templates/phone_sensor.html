@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phone Crash Sensor</title>
+<style>
+  body { font-family: -apple-system, sans-serif; background:#0b0b0f; color:#eee; margin:0; padding:24px; text-align:center; }
+  h1 { font-size:1.3rem; margin-bottom:4px; }
+  p.sub { color:#999; font-size:0.85rem; margin-top:0; }
+  #status { margin:24px auto; padding:20px; border-radius:14px; background:#16161d; max-width:420px; }
+  .dot { width:14px; height:14px; border-radius:50%; display:inline-block; margin-right:8px; background:#555; }
+  .dot.on { background:#2ed573; box-shadow:0 0 10px #2ed573; }
+  .dot.armed { background:#ffa502; }
+  .dot.alert { background:#ff4757; box-shadow:0 0 14px #ff4757; }
+  #mag { font-size:2.6rem; font-weight:700; margin:10px 0; }
+  button { background:#e8590c; color:#fff; border:none; padding:14px 28px; border-radius:10px; font-size:1rem; margin-top:12px; }
+  button:disabled { background:#444; }
+  #log { text-align:left; font-size:0.75rem; color:#888; max-width:420px; margin:20px auto; max-height:160px; overflow-y:auto; background:#111; padding:10px; border-radius:8px; }
+</style>
+</head>
+<body>
+
+<h1>Phone Crash Sensor</h1>
+<p class="sub">Uses your phone's motion sensor + GPS to trigger an accident alert. No extra hardware needed.</p>
+
+<div id="status">
+  <div><span id="dotMotion" class="dot"></span>Motion sensor</div>
+  <div style="margin-top:6px"><span id="dotGps" class="dot"></span>GPS lock</div>
+  <div id="mag">--</div>
+  <div style="font-size:0.8rem;color:#888">peak acceleration (g)</div>
+  <button id="startBtn">Start monitoring</button>
+</div>
+
+<div id="log"></div>
+
+<script>
+// ---------------- CONFIG: edit these two lines ----------------
+const SERVER_URL = "https://YOUR-NGROK-URL.ngrok-free.app/api/hardware/alert";
+const API_KEY    = "change-this-secret-key"; // must match HARDWARE_API_KEY in app.py
+// ----------------------------------------------------------------
+
+const DEVICE_ID = "phone-sensor-" + Math.floor(Math.random() * 1000);
+const IMPACT_THRESHOLD_G = 2.5;   // shake the phone hard to cross this
+const COOLDOWN_MS = 15000;
+
+let lastAlert = 0;
+let lat = null, lon = null;
+let armed = false;
+
+const dotMotion = document.getElementById("dotMotion");
+const dotGps = document.getElementById("dotGps");
+const magEl = document.getElementById("mag");
+const logEl = document.getElementById("log");
+const startBtn = document.getElementById("startBtn");
+
+function log(msg) {
+  const line = document.createElement("div");
+  line.textContent = new Date().toLocaleTimeString() + " — " + msg;
+  logEl.prepend(line);
+}
+
+function watchGps() {
+  if (!navigator.geolocation) { log("Geolocation not supported"); return; }
+  navigator.geolocation.watchPosition(
+    (pos) => {
+      lat = pos.coords.latitude;
+      lon = pos.coords.longitude;
+      dotGps.classList.add("on");
+    },
+    (err) => log("GPS error: " + err.message),
+    { enableHighAccuracy: true, maximumAge: 5000 }
+  );
+}
+
+function sendAlert(impactG) {
+  if (lat === null || lon === null) {
+    log("No GPS fix yet, skipping alert.");
+    return;
+  }
+  fetch(SERVER_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-API-Key": API_KEY },
+    body: JSON.stringify({ device_id: DEVICE_ID, lat, lon, impact_g: impactG })
+  })
+  .then(r => r.json())
+  .then(data => log("Alert sent: " + JSON.stringify(data)))
+  .catch(err => log("Send failed: " + err.message));
+}
+
+function onMotion(event) {
+  const a = event.accelerationIncludingGravity || event.acceleration;
+  if (!a) return;
+  const gx = (a.x || 0) / 9.81, gy = (a.y || 0) / 9.81, gz = (a.z || 0) / 9.81;
+  const magnitude = Math.sqrt(gx*gx + gy*gy + gz*gz);
+  magEl.textContent = magnitude.toFixed(2);
+
+  if (magnitude > IMPACT_THRESHOLD_G && Date.now() - lastAlert > COOLDOWN_MS) {
+    lastAlert = Date.now();
+    dotMotion.classList.add("alert");
+    log(`Impact detected: ${magnitude.toFixed(2)}g -> sending alert`);
+    sendAlert(magnitude);
+    setTimeout(() => dotMotion.classList.remove("alert"), 2000);
+  }
+}
+
+startBtn.addEventListener("click", async () => {
+  // iOS Safari requires an explicit permission prompt triggered by a user tap
+  if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function") {
+    try {
+      const res = await DeviceMotionEvent.requestPermission();
+      if (res !== "granted") { log("Motion permission denied"); return; }
+    } catch (e) { log("Permission error: " + e.message); return; }
+  }
+  window.addEventListener("devicemotion", onMotion);
+  dotMotion.classList.add("on");
+  watchGps();
+  startBtn.disabled = true;
+  startBtn.textContent = "Monitoring...";
+  log("Monitoring started. Shake your phone hard to simulate a crash.");
+});
+</script>
+</body>
+</html>
