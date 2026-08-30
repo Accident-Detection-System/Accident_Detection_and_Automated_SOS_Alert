@@ -27,50 +27,105 @@ def eta_minutes(distance_km):
 
 
 def send_email(subject, body, recipients, screenshot_path=None, clip_path=None):
-    recipients = [x for x in dict.fromkeys(recipients or []) if x]
-    if not recipients or not settings.smtp_user or not settings.smtp_password:
+    recipients = [x.strip() for x in dict.fromkeys(recipients or []) if x and x.strip()]
+
+    if not recipients:
+        print("[EMAIL] No recipients provided.")
         return False
+
+    if not settings.smtp_user:
+        print("[EMAIL] SMTP_USER is missing.")
+        return False
+
+    if not settings.smtp_password:
+        print("[EMAIL] SMTP_PASSWORD is missing.")
+        return False
+
     try:
+        print(f"[EMAIL] Preparing email...")
+        print(f"[EMAIL] SMTP server: {settings.smtp_host}:{settings.smtp_port}")
+        print(f"[EMAIL] Sender: {settings.smtp_user}")
+        print(f"[EMAIL] Recipients: {recipients}")
+
         msg = MIMEMultipart()
         msg["From"] = settings.smtp_user
         msg["To"] = ", ".join(recipients)
         msg["Subject"] = subject
-        msg.attach(MIMEText(body, "plain"))
+
+        msg.attach(MIMEText(body, "plain", "utf-8"))
+
+        # Attach accident screenshot
         if screenshot_path and os.path.exists(screenshot_path):
+            print(f"[EMAIL] Attaching screenshot: {screenshot_path}")
+
             with open(screenshot_path, "rb") as f:
                 img = MIMEImage(f.read())
-            img.add_header("Content-Disposition", "attachment", filename="accident_screenshot.png")
+
+            img.add_header(
+                "Content-Disposition",
+                "attachment",
+                filename="accident_screenshot.png"
+            )
             msg.attach(img)
+
+        # Attach accident video clip
         if clip_path and os.path.exists(clip_path):
+            print(f"[EMAIL] Attaching clip: {clip_path}")
+
             with open(clip_path, "rb") as f:
                 part = MIMEBase("application", "octet-stream")
                 part.set_payload(f.read())
+
             encoders.encode_base64(part)
-            part.add_header("Content-Disposition", "attachment", filename="accident_clip.mp4")
+
+            part.add_header(
+                "Content-Disposition",
+                "attachment",
+                filename="accident_clip.mp4"
+            )
+
             msg.attach(part)
-        with smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port, timeout=20) as server:
-            server.login(settings.smtp_user, settings.smtp_password)
-            server.sendmail(settings.smtp_user, recipients, msg.as_string())
+
+        print("[EMAIL] Connecting to SMTP server...")
+
+        with smtplib.SMTP_SSL(
+            settings.smtp_host,
+            settings.smtp_port,
+            timeout=20
+        ) as server:
+
+            print("[EMAIL] SMTP connection established.")
+
+            print("[EMAIL] Logging in...")
+            server.login(
+                settings.smtp_user,
+                settings.smtp_password
+            )
+
+            print("[EMAIL] SMTP login successful.")
+
+            print("[EMAIL] Sending email...")
+
+            server.sendmail(
+                settings.smtp_user,
+                recipients,
+                msg.as_string()
+            )
+
+        print("[EMAIL] Email sent successfully.")
         return True
-    except Exception:
+
+    except smtplib.SMTPAuthenticationError as e:
+        print("[EMAIL ERROR] Gmail authentication failed.")
+        print(f"[EMAIL ERROR] {e}")
         return False
 
+    except smtplib.SMTPException as e:
+        print("[EMAIL ERROR] SMTP error occurred.")
+        print(f"[EMAIL ERROR] {e}")
+        return False
 
-def create_alert_response(alert_id, lat, lon, severity, screenshot_path=None, clip_path=None, sos=False):
-    hospitals = nearest_hospitals(lat, lon) if lat is not None and lon is not None else []
-    nearest = [{"id": h["id"], "name": h["name"], "distance_km": round(h["distance_km"], 1), "phone": h.get("phone") or "", "eta_min": eta_minutes(h["distance_km"])} for h in hospitals]
-    return {
-        "alert_id": alert_id,
-        "location": f"Lat: {lat:.6f}, Lon: {lon:.6f}" if lat is not None and lon is not None else "Location unavailable",
-        "gps_lat": lat,
-        "gps_lon": lon,
-        "nearest_hospitals": nearest,
-        "severity": severity,
-        "screenshot": f"/media/screenshots/{PathName(screenshot_path)}" if screenshot_path else None,
-        "clip": f"/media/clips/{PathName(clip_path)}" if clip_path else None,
-        "sos": sos,
-    }
-
-
-def PathName(path):
-    return os.path.basename(path) if path else ""
+    except Exception as e:
+        print("[EMAIL ERROR] Unexpected error.")
+        print(f"[EMAIL ERROR] {type(e).__name__}: {e}")
+        return False
